@@ -75,7 +75,7 @@ W_LEN_3_4 = 3 * (256 // 4)  # Tres cuartos de la longitud de la ventana
 # Configuración del modelo
 W_LEN = 256  # Longitud de la ventana de entrada
 N_CLASSES = 90  # Número de clases
-modelname = "M500"
+modelname = "FINAL_500"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = CNNModel(seq_len=W_LEN, n_classes=N_CLASSES).to(device)
@@ -92,7 +92,7 @@ y_train = np.load("Pytorch/y_train.npy")  # No en tensor para manipular índices
 # Carpeta base donde se encuentran los datos de ECG
 base_folder = "BBDD/ecg-id-database-1.0.0"
 #---------------------------------------------------------------------------------------------------------
-Persona = "66" # SI ES < 10 PONER 0 DELANTE
+Persona = "30" # SI ES < 10 PONER 0 DELANTE
 #---------------------------------------------------------------------------------------------------------
 synthetic_ecg = f"BBDD/Person_{Persona}/rec_1"
 
@@ -175,7 +175,7 @@ if record_paths:
     print(f"Procesando persona: {person_folder2}")  # Mostrar progreso
     real_beat_segments2 = process_record(real_record_path2, annotation_path2)
     print(len(real_beat_segments2))
-    real_beat2 = real_beat_segments2[2]  # Seleccionar el primer latido segmentado
+    real_beat2 = real_beat_segments2[7]  # Seleccionar el primer latido segmentado
 
     # **Graficar ambos latidos**
     plt.figure(figsize=(15, 4))

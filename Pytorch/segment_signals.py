@@ -11,6 +11,8 @@ W_LEN = 256
 W_LEN_1_4 = 256 // 4
 W_LEN_3_4 = 3 * (256 // 4)
 
+print("segment signals pytorch")
+
 record = wfdb.rdrecord('BBDD/ecg-id-database-1.0.0/Person_01/rec_1')  
 annotation = wfdb.rdann('BBDD/ecg-id-database-1.0.0/Person_01/rec_1', 'atr')  
 
@@ -22,9 +24,20 @@ sampling_rate = record.fs
 
 signals, info = nk.ecg_process(signal, sampling_rate=sampling_rate)
 
-signal = signals["ECG_Clean"]
+signal_clean = signals["ECG_Clean"]
 r_peaks_annot = info["ECG_R_Peaks"]
 
+plt.figure(figsize=(15, 6))
+plt.plot(signal[:1500], label='Señal Original', alpha=0.7)
+plt.plot(signal_clean[:1500], label='Señal Limpia', color='red',alpha=0.7)
+plt.title("Comparación de señal ECG original vs limpia")
+plt.xlabel("Muestras")
+plt.ylabel("Amplitud")
+plt.legend()
+plt.grid()
+plt.savefig('Pytorch/img/train/comparacionseñales.png')
+
+plt.show()
 
 def segmentSignals(signal, r_peaks_annot, normalization=True, person_id= None, file_id=None):
     """
@@ -102,7 +115,7 @@ segmented_signals, refined_r_peaks = segmentSignals(signal, r_peaks_annot)
 print("Picos R refinados:", refined_r_peaks)
 
 
-segment = segmented_signals[3]  
+segment = segmented_signals[1]  
 sampling_rate = 500  
 time_axis = np.arange(len(segment)) / sampling_rate  
 
@@ -120,7 +133,7 @@ plt.ylabel("Amplitud")
 plt.axhline(0, color='black', linestyle='--', linewidth=0.8)  # Línea base
 plt.grid(True)
 plt.legend()
-plt.savefig('latido.png')
+plt.savefig('Pytorch/img/train/latido.png')
 plt.show()
 
 # Grafica de la señal completa con sus picos R
@@ -130,5 +143,5 @@ plt.legend()
 plt.title('ECG Signal with R-Peaks')
 plt.xlabel('Samples')
 plt.ylabel('Amplitude')
-plt.savefig('señalcompleta.png')
+plt.savefig('Pytorch/img/train/señalcompleta.png')
 plt.show()

@@ -17,8 +17,8 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 import torch
 import numpy as np
 from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score
-modelname = "M500"
-Persona = "3"
+modelname = "FINAL_500"
+Persona = "2"
 real_class = int(Persona) - 1  # Persona 3 → clase 2
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

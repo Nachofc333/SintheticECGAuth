@@ -23,7 +23,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV, KFold  # Her
 from sklearn import metrics  # Para evaluar el rendimiento del modelo
 import matplotlib.pyplot as plt  # Para generar gráficos
 from sklearn.metrics import RocCurveDisplay, confusion_matrix, recall_score, f1_score  # Para mostrar curvas ROC
-from CVAE import ConditionalVAE
+from CVAEpruebas import ConditionalVAE
 from VAE import EstandarVAE
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
@@ -32,7 +32,7 @@ from sklearn.preprocessing import MinMaxScaler
 # Parámetros
 num_classes = 90
 seq_length = 256
-batch_size = 32
+batch_size = 16
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Parámetros constantes
@@ -114,10 +114,10 @@ print("Usando dispositivo:", device)
 
 # 📌 Cargar datos
 base_folder = "BBDD/ecg-id-database-1.0.0"
-modelname = "FINAL_300"
+modelname = "FINAL5_300"
 num_classes = 90
 num_epochs = 300
-latent_dim = 16
+latent_dim = 32
 batch_size = 32
 X = []  # Lista para las señales
 y = []  # Lista para las etiquetas

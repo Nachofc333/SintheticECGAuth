@@ -6,12 +6,12 @@ from fastdtw import fastdtw
 from tqdm import tqdm
 
 # Parámetros
-label = 27  # La persona real es label + 1
+label = 58  # La persona real es label + 1
 dir_path = f"FakeECG/TestPersona_{label+1}"
-
+modelname = "FINAL5_300"
 # Cargar datos
-X_train = np.load("FakeECG/X_train500.npy")
-y_train = np.load("FakeECG/y_train500.npy")
+X_train = np.load(f"FakeECG/X_train{modelname}.npy")  # (N, 1, 256)
+y_train = np.load(f"FakeECG/y_train{modelname}.npy")  # (N, 90)
 
 # Convierte one-hot a índices (clases reales de 0 a 89)
 y_train_indices = np.argmax(y_train, axis=1)

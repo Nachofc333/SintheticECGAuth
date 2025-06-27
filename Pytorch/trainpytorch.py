@@ -23,6 +23,8 @@ import numpy as np  # Para operaciones numéricas y trabajo con arrays
 import seaborn as sns
 import tensorflow as tf  # Para trabajar con modelos de aprendizaje profundo
 from tensorflow import keras  # API de alto nivel de TensorFlow
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from segment_signals import segmentSignals  # Función personalizada para segmentar señales
 from sklearn.model_selection import train_test_split  # Para dividir datos en conjuntos de entrenamiento y prueba
 from cnnpytorch import CNNModel  # Función personalizada para obtener un modelo CNN
@@ -44,6 +46,8 @@ W_LEN_1_4 = 256 // 4  # Un cuarto de la longitud de la ventana
 W_LEN_3_4 = 3 * (256 // 4)  # Tres cuartos de la longitud de la ventana
 
 def process_record(record_path, annotation_path):
+    global latido
+
     # Leer el registro desde el archivo
     record = wfdb.rdrecord(record_path)
     # Leer las anotaciones desde el archivo
@@ -60,6 +64,29 @@ def process_record(record_path, annotation_path):
 
     # Segmentar latidos de la señal
     segmented_signals, refined_r_peaks = segmentSignals(signal, r_peaks_annot)
+    segment = segmented_signals[1]  
+    if not latido:
+        sampling_rate = 500  
+        time_axis = np.arange(len(segment)) / sampling_rate  
+
+        r_peak_index = np.argmax(segment)  
+        r_peak_value = segment[r_peak_index]  
+
+        # Gráfica del latido y su pico R
+        plt.figure(figsize=(10, 5))
+        plt.plot(time_axis, segment, label="Latido Segmentado", color='red')  # Señal en rojo
+        plt.scatter(time_axis[r_peak_index], r_peak_value, color='blue', zorder=5)  # Pico R en gris
+        plt.text(time_axis[r_peak_index], r_peak_value, '  R', color='blue', fontsize=12) 
+        plt.title("Latido segmentado y pico R")
+        plt.xlabel("Tiempo (s)")
+        plt.ylabel("Amplitud")
+        plt.axhline(0, color='black', linestyle='--', linewidth=0.8)  # Línea base
+        plt.grid(True)
+        plt.legend()
+        plt.savefig('Pytorch/img/train/latidoconpico.png')
+        plt.show()
+
+        latido = True
     return segmented_signals
 
 def process_person(person_folder, person_id):
@@ -81,14 +108,11 @@ def process_person(person_folder, person_id):
     # Convertir las listas en arrays de NumPy
     return np.array(all_segments), np.array(all_labels)
 
-# Graficar las curvas de pérdida y precisión
-def plot_training_curves(history):
+import matplotlib.pyplot as plt
+
+def plot_training_curves(train_loss, val_loss, train_acc, val_acc, modelname):
     # Obtener las métricas del historial
-    train_loss = history.history['loss']
-    val_loss = history.history['val_loss']
-    train_acc = history.history['accuracy']
-    val_acc = history.history['val_accuracy']
-    epochs_range = range(1, len(history.history['loss']) + 1)
+    epochs_range = range(len(train_loss))
 
     # Configurar el tamaño de la figura
     plt.figure(figsize=(12, 5))
@@ -100,6 +124,7 @@ def plot_training_curves(history):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.title('Loss Curve')
+    plt.savefig(f"Pytorch/img/train/LossCurve{modelname}.png")
     plt.legend()
 
     # Subplot 2: Curvas de precisión
@@ -110,7 +135,7 @@ def plot_training_curves(history):
     plt.ylabel('Accuracy')
     plt.title('Accuracy Curve')
     plt.legend()
-
+    plt.savefig(f"Pytorch/img/train/AccCurve{modelname}.png")
     plt.show()
 
 # 📌 Verifica si hay GPU disponible
@@ -118,11 +143,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Usando dispositivo:", device)
 
 # 📌 Cargar datos
-modelname = "M500"
+modelname = "FINAL2_500"
 base_folder = "BBDD/ecg-id-database-1.0.0"
 X = []  # Lista para las señales
 y = []  # Lista para las etiquetas
-
+latido = False  # Variable para controlar la gráfica del latido
 # Procesar los datos
 for person_id, person_folder in enumerate(sorted(glob.glob(os.path.join(base_folder, 'Person_*')))):
     print(f"Procesando persona: {person_id}")
@@ -148,12 +173,16 @@ np.save(f"Pytorch/x_test{modelname}.npy", X_test.numpy())
 np.save(f"Pytorch/y_test{modelname}.npy", y_test.numpy())
 
 # 📌 Stratified KFold
-kf = KFold(n_splits=2, shuffle=True, random_state=42)
+kf = KFold(n_splits=10, shuffle=True, random_state=42)
 fold_accuracies = []
 best_model = None
 best_accuracy = 0.0  
 epochs = 500
 
+best_train_losses = []
+best_val_losses = []
+best_train_accuracies = []
+best_val_accuracies = []
 
 for fold, (train_index, val_index) in enumerate(kf.split(X_train, torch.argmax(y_train, dim=1))):
     print(f"Fold {fold}")
@@ -178,11 +207,17 @@ for fold, (train_index, val_index) in enumerate(kf.split(X_train, torch.argmax(y
     best_val_loss = float("inf")
     epochs_no_improve = 0
 
-
+    train_losses = []
+    val_losses = []
+    train_accuracies = []
+    val_accuracies = []
     # Entrenamiento
     for epoch in range(epochs):
         model.train()
         running_loss = 0.0
+        correct_train = 0
+        total_train = 0
+
         train_loader_tqdm = tqdm(train_loader, desc=f"Época {epoch+1}/{epochs}")
         for X_batch, y_batch in train_loader:
             X_batch, y_batch = X_batch.to(device), y_batch.to(device)
@@ -193,30 +228,64 @@ for fold, (train_index, val_index) in enumerate(kf.split(X_train, torch.argmax(y
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            # progreso
+
+            _, predicted = torch.max(outputs, 1)
+            correct_train += (predicted == torch.argmax(y_batch, dim=1)).sum().item()
+            total_train += y_batch.size(0)
+
             train_loader_tqdm.set_postfix(loss=running_loss)
+
+        # Guardar métricas de entrenamiento
+        epoch_train_loss = running_loss / len(train_loader)
+        epoch_train_acc = correct_train / total_train
+        train_losses.append(epoch_train_loss)
+        train_accuracies.append(epoch_train_acc)
 
         # Validación
         model.eval()
-        correct = 0
-        total = 0
+        val_loss = 0.0
+        correct_val = 0
+        total_val = 0
         with torch.no_grad():
             for X_batch, y_batch in val_loader:
                 X_batch, y_batch = X_batch.to(device), y_batch.to(device)
                 outputs = model(X_batch)
-                _, predicted = torch.max(outputs, 1) 
-                total += y_batch.size(0)
-                correct += (predicted == torch.argmax(y_batch, dim=1)).sum().item()
+                loss = criterion(outputs, torch.argmax(y_batch, dim=1))
+                val_loss += loss.item()
 
-        val_accuracy = correct / total
-        fold_accuracies.append(val_accuracy)
-        print(f"Fold {fold + 1} - Accuracy en validación: {val_accuracy:.4f}")
+                _, predicted = torch.max(outputs, 1)
+                correct_val += (predicted == torch.argmax(y_batch, dim=1)).sum().item()
+                total_val += y_batch.size(0)
 
-        # Guardar el mejor modelo
-        if val_accuracy > best_accuracy:
-            best_accuracy = val_accuracy
+        epoch_val_loss = val_loss / len(val_loader)
+        epoch_val_acc = correct_val / total_val
+        val_losses.append(epoch_val_loss)
+        val_accuracies.append(epoch_val_acc)
+
+        print(f"Fold {fold + 1} - Epoch {epoch + 1} - Val Accuracy: {epoch_val_acc:.4f}")
+
+        # Guardar mejor modelo
+        if epoch_val_acc > best_accuracy:
+            best_accuracy = epoch_val_acc
             best_model = model
-            torch.save(model.state_dict(), f"Pytorch/{modelname}.pth")  # Guardar mejor modelo
+            torch.save(model.state_dict(), f"Pytorch/{modelname}.pth")
+
+            best_train_losses = train_losses.copy()
+            best_val_losses = val_losses.copy()
+            best_train_accuracies = train_accuracies.copy()
+            best_val_accuracies = val_accuracies.copy()
+
+
+
+plot_training_curves(
+    train_loss=best_train_losses,
+    val_loss=best_val_losses,
+    train_acc=best_train_accuracies,
+    val_acc=best_val_accuracies,
+    modelname=modelname
+)
+
+
 
 # 📌 Matriz de Confusión
 y_labels = torch.argmax(y, dim=1).cpu().numpy()
@@ -275,7 +344,7 @@ recall_weighted = recall_score(y_true, y_pred, average='weighted')
 f1_weighted = f1_score(y_true, y_pred, average='weighted')
 
 # 📌 Guardar métricas en un archivo txt
-with open("Pytorch/metrics/metrics_summary.txt", "w") as f:
+with open(f"Pytorch/metrics/metrics_summary{modelname}.txt", "w") as f:
     f.write(f"Accuracy: {accuracy:.4f}\n")
     f.write(f"Precision (macro): {precision_macro:.4f}\n")
     f.write(f"Recall (macro): {recall_macro:.4f}\n")

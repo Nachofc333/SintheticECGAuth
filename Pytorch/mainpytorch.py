@@ -100,8 +100,10 @@ x = np.array(x)
 y = np.array(y)
 
 x = torch.tensor(x, dtype=torch.float32).unsqueeze(1).to(device)  # Añadir dimensión de canal
+inicio = 6000
+fin = 6300
 
-etiqueta = 6200
+etiqueta = 6100
 new_beat = x[etiqueta].unsqueeze(0)  # Agregar dimensión de batch
 
 y_true = y[etiqueta]
@@ -114,6 +116,22 @@ with torch.no_grad():
 
 print(f"La etiqueta real del latido en la posición {etiqueta} es: {y_true}")
 print(f"PREDICCIÓN: El latido pertenece a la persona: {predicted_class}")
+
+resultados = []
+
+with torch.no_grad():
+    for etiqueta in range(inicio, fin):
+        new_beat = x[etiqueta].unsqueeze(0)  # Agregar dimensión de batch
+        y_true = y[etiqueta]
+
+        predictions = model(new_beat)
+        predicted_class = torch.argmax(predictions, dim=1).item()
+
+        resultados.append((etiqueta, y_true.item(), predicted_class))
+
+# Mostrar resultados
+for idx, real, pred in resultados:
+    print(f"Latido {idx}: Real = {real}, Predicho = {pred}")
 
 # Graficar la señal
 

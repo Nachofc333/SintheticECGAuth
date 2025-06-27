@@ -23,7 +23,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV, KFold  # Her
 from sklearn import metrics  # Para evaluar el rendimiento del modelo
 import matplotlib.pyplot as plt  # Para generar gráficos
 from sklearn.metrics import RocCurveDisplay, confusion_matrix, recall_score, f1_score  # Para mostrar curvas ROC
-from CVAE import ConditionalVAE
+from CVAEpruebas import ConditionalVAE
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 from sklearn.preprocessing import MinMaxScaler
@@ -32,10 +32,10 @@ from sklearn.preprocessing import MinMaxScaler
 num_classes = 90
 label = 27 # LA PERSONA REAL ES LABEL + 1
 n_samples= 200
-latent_dim = 16
+latent_dim = 32
 seq_length = 256
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-modelname = "FINAL_300"
+modelname = "FINAL5_300"
 print(f"GENERANDO ECG DE LA PERSONA: {label+1}")
 # 📌 Cargar modelo
 cvae = ConditionalVAE(in_channels=1, num_classes=num_classes, latent_dim=latent_dim, seq_length=seq_length).to(device)
@@ -153,28 +153,26 @@ print(f"Min y max de ECG generado: {fake_signal.min()}, {fake_signal.max()}")
 # Obtener min y max del ECG real
 min_real, max_real = ecg_real.min(), ecg_real.max()
 
-# Desnormalizar el ECG generado
-#fake_signal = (fake_signal + 1) * (max_real - min_real) / 2 + min_real
+for label in range(num_classes):
+    print(f"\n=== Persona {label+1} ===")
 
-# Verificar los nuevos valores
-print(f"Min y max de ECG generado después de desnormalizar: {fake_signal.min()}, {fake_signal.max()}")
+    # Real
+    idxs_real = np.where(y_train == label)[0]
+    X_test_real = X_train[idxs_real][:n_samples]
+    y_test_real = np.array([label] * len(X_test_real))
 
+    # Sintético
+    X_test_fake = generate_multiple_ecgs(cvae, label, n_samples=n_samples)
+    y_test_fake = np.array([label] * n_samples)
 
-plt.plot(fake_signal[0][0])  # Graficar ECG generado
-plt.title("ECG Sintético Generado por CVAE")
-plt.savefig(f"FakeECG/img/ECGGENERADO{label+1}.png")
-plt.show()
+    # Guardar señales reales y sintéticas
+    output_dir = f"FakeECG/TestPersona_{label+1}"
+    os.makedirs(output_dir, exist_ok=True)
 
-# 📌 Graficar ambos ECGs
-plt.figure(figsize=(12, 4))
+    np.save(os.path.join(output_dir, f"X_test_real_person_{label+1}.npy"), X_test_real)
+    np.save(os.path.join(output_dir, f"y_test_real_person_{label+1}.npy"), y_test_real)
+    np.save(os.path.join(output_dir, f"X_test_fake_person_{label+1}.npy"), X_test_fake)
+    np.save(os.path.join(output_dir, f"y_test_fake_person_{label+1}.npy"), y_test_fake)
 
-plt.subplot(1, 2, 1)
-plt.plot(ecg_real[0])  
-plt.title(f"ECG Real - Persona {label+1}")
-
-plt.subplot(1, 2, 2)
-plt.plot(fake_signal[0][0])  
-plt.title(f"ECG Generado - Persona {label+1}")
-
-plt.savefig(f"FakeECG/img/comparacion_ecg{label+1}.png")
-plt.show()
+    # Guardar un solo ECG falso como .dat/.hea
+    save_synthetic_ecg(X_test_fake[0], label)

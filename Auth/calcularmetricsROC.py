@@ -7,15 +7,15 @@ from cnnpytorch import CNNModel
 import os
 
 # --- CONFIGURACIÓN ---
-MODEL_PATH = "Pytorch/FINAL_500.pth"
+MODEL_PATH = "Auth/FINAL_500.pth"
 N_CLASSES = 90
 SEQ_LEN = 256 # Cambia si tu longitud de secuencia es diferente
 BATCH_SIZE = 32
 
 # --- CARGAR DATOS ---
 # Asegúrate de que X_test y y_test estén ya procesados (normalizados, en tensores, etc.)
-X_test = np.load("Pytorch/x_testFINAL_500.npy")  # o usa tu propio código para cargar
-y_test = np.load("Pytorch/y_testFINAL_500.npy")  # one-hot encoded
+X_test = np.load("Auth/x_testFINAL_500.npy")  # o usa tu propio código para cargar
+y_test = np.load("Auth/y_testFINAL_500.npy")  # one-hot encoded
 
 # Si y_test está one-hot encoded, convierte a etiquetas
 if y_test.ndim > 1:

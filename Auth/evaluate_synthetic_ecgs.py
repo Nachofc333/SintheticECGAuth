@@ -18,7 +18,7 @@ generate_script = "FakeECG/generate_all_ECG_2.py"
 # Cargar modelo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = CNNModel(seq_len=W_LEN, n_classes=N_CLASSES).to(device)
-model.load_state_dict(torch.load(f"Pytorch/{modelname}.pth", map_location=device))
+model.load_state_dict(torch.load(f"Auth/{modelname}.pth", map_location=device))
 model.eval()
 
 # Rutas
@@ -86,7 +86,7 @@ disp.plot(ax=ax, cmap="Blues", colorbar=False)
 plt.title("Matriz de Confusión Global")
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig("Pytorch/img/test/MatrizConfAll.png")
+plt.savefig("Auth/img/test/MatrizConfAll.png")
 
 plt.show()
 
@@ -98,7 +98,7 @@ plt.ylabel("Error medio (fallos / muestras)")
 plt.title("Error promedio por clase tras 10 iteraciones")
 plt.grid(True)
 plt.tight_layout()
-plt.savefig("Pytorch/img/test/ErrorPorClase5.png")
+plt.savefig("Auth/img/test/ErrorPorClase5.png")
 plt.show()
 
 # Top clases con más errores

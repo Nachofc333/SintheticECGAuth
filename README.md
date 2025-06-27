@@ -8,19 +8,19 @@ Base de datos con los registros de los latidos de 90 personas
 ## -------------------------------------------------------------------
 ## Elementos autenticador
 
-### Pytorch/cnnpytorch: 
+### Auth/cnnpytorch: 
 Este archivo contiene el modelo CNN utilizado para entrenar el autenticador
-### Pytorch/trainpytorch: 
+### Auth/trainpytorch: 
 Este archivo contiene el entrenamiento del modelo utilizando `cnnpytorch.py` y su generacion en formato .pth
 ### segment_signals: 
 Este archivo contiene el codigo para segmentar y procesar las señales de los ECG
-### Pytorch/mainpytorch: 
+### Auth/mainpytorch: 
 Archivo que contiene el codigo encargado de realizar las prediciones seleccionando un latido real
-### Pytorch/mainpytorch: 
+### Auth/mainpytorch: 
 Archivo que contiene el codigo encargado de realizar las prediciones seleccionando un latido sintético generado
-### Pytorch/model.pth:
+### Auth/model.pth:
 Modelo entrenado para predecir a quien pertenece el latido
-### Pytorch/multiplefakeecg:
+### Auth/multiplefakeecg:
 Metricas utilizando multiples ecgs sinteticos y los latidos reales para comparar
 
 ## -----------------------------------------------------------------

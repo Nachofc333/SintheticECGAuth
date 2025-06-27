@@ -35,7 +35,7 @@ plt.xlabel("Muestras")
 plt.ylabel("Amplitud")
 plt.legend()
 plt.grid()
-plt.savefig('Pytorch/img/train/comparacionseñales.png')
+plt.savefig('Auth/img/train/comparacionseñales.png')
 
 plt.show()
 
@@ -133,7 +133,7 @@ plt.ylabel("Amplitud")
 plt.axhline(0, color='black', linestyle='--', linewidth=0.8)  # Línea base
 plt.grid(True)
 plt.legend()
-plt.savefig('Pytorch/img/train/latido.png')
+plt.savefig('Auth/img/train/latido.png')
 plt.show()
 
 # Grafica de la señal completa con sus picos R
@@ -143,5 +143,5 @@ plt.legend()
 plt.title('ECG Signal with R-Peaks')
 plt.xlabel('Samples')
 plt.ylabel('Amplitude')
-plt.savefig('Pytorch/img/train/señalcompleta.png')
+plt.savefig('Auth/img/train/señalcompleta.png')
 plt.show()

@@ -83,7 +83,7 @@ def process_record(record_path, annotation_path):
         plt.axhline(0, color='black', linestyle='--', linewidth=0.8)  # Línea base
         plt.grid(True)
         plt.legend()
-        plt.savefig('Pytorch/img/train/latidoconpico.png')
+        plt.savefig('Auth/img/train/latidoconpico.png')
         plt.show()
 
         latido = True
@@ -124,7 +124,7 @@ def plot_training_curves(train_loss, val_loss, train_acc, val_acc, modelname):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.title('Loss Curve')
-    plt.savefig(f"Pytorch/img/train/LossCurve{modelname}.png")
+    plt.savefig(f"Auth/img/train/LossCurve{modelname}.png")
     plt.legend()
 
     # Subplot 2: Curvas de precisión
@@ -135,7 +135,7 @@ def plot_training_curves(train_loss, val_loss, train_acc, val_acc, modelname):
     plt.ylabel('Accuracy')
     plt.title('Accuracy Curve')
     plt.legend()
-    plt.savefig(f"Pytorch/img/train/AccCurve{modelname}.png")
+    plt.savefig(f"Auth/img/train/AccCurve{modelname}.png")
     plt.show()
 
 # 📌 Verifica si hay GPU disponible
@@ -169,8 +169,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # Guardar conjunto de prueba para evaluaciones futuras
-np.save(f"Pytorch/x_test{modelname}.npy", X_test.numpy())
-np.save(f"Pytorch/y_test{modelname}.npy", y_test.numpy())
+np.save(f"Auth/x_test{modelname}.npy", X_test.numpy())
+np.save(f"Auth/y_test{modelname}.npy", y_test.numpy())
 
 # 📌 Stratified KFold
 kf = KFold(n_splits=10, shuffle=True, random_state=42)
@@ -268,7 +268,7 @@ for fold, (train_index, val_index) in enumerate(kf.split(X_train, torch.argmax(y
         if epoch_val_acc > best_accuracy:
             best_accuracy = epoch_val_acc
             best_model = model
-            torch.save(model.state_dict(), f"Pytorch/{modelname}.pth")
+            torch.save(model.state_dict(), f"Auth/{modelname}.pth")
 
             best_train_losses = train_losses.copy()
             best_val_losses = val_losses.copy()
@@ -297,7 +297,7 @@ sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", cbar=False)
 plt.xlabel("Clase")
 plt.ylabel("Clase")
 plt.title("Matriz de Confusión de Frecuencias por Clase (Desbalanceo de Datos)")
-plt.savefig(f"Pytorch/img/train/ConfMatrix{modelname}.png")
+plt.savefig(f"Auth/img/train/ConfMatrix{modelname}.png")
 plt.show()
 
 # 📌 Curva ROC para la clase 2 y 15 clases aleatorias
@@ -320,7 +320,7 @@ plt.xlabel("False Positive Rate")
 plt.ylabel("True Positive Rate")
 plt.title("Curva ROC (One-vs-Rest) para 16 clases")
 plt.legend()
-plt.savefig(f"Pytorch/img/train/roc_curve{modelname}.png")  # Guarda la curva ROC como imagen
+plt.savefig(f"Auth/img/train/roc_curve{modelname}.png")  # Guarda la curva ROC como imagen
 plt.show()
 
 X_test_tensor = X_test.to(device)
@@ -344,7 +344,7 @@ recall_weighted = recall_score(y_true, y_pred, average='weighted')
 f1_weighted = f1_score(y_true, y_pred, average='weighted')
 
 # 📌 Guardar métricas en un archivo txt
-with open(f"Pytorch/metrics/metrics_summary{modelname}.txt", "w") as f:
+with open(f"Auth/metrics/metrics_summary{modelname}.txt", "w") as f:
     f.write(f"Accuracy: {accuracy:.4f}\n")
     f.write(f"Precision (macro): {precision_macro:.4f}\n")
     f.write(f"Recall (macro): {recall_macro:.4f}\n")
@@ -355,7 +355,7 @@ with open(f"Pytorch/metrics/metrics_summary{modelname}.txt", "w") as f:
 
 # 📌 Guardar classification report completo
 report = classification_report(y_true, y_pred, digits=4)
-with open(f"Pytorch/metrics/classification_report{modelname}.txt", "w") as f:
+with open(f"Auth/metrics/classification_report{modelname}.txt", "w") as f:
     f.write(report)
 
 # 📌 Matriz de Confusión
@@ -365,9 +365,9 @@ sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", cbar=False)
 plt.xlabel("Predicción")
 plt.ylabel("Real")
 plt.title("Matriz de Confusión - Conjunto de Prueba")
-plt.savefig(f"Pytorch/metrics/confusion_matrix{modelname}.png")
+plt.savefig(f"Auth/metrics/confusion_matrix{modelname}.png")
 plt.close()
 
 # 📌 Guardar matriz en CSV
 df_cm = pd.DataFrame(conf_matrix)
-df_cm.to_csv(f"Pytorch/metrics/confusion_matrix.csv{modelname}", index=False)
+df_cm.to_csv(f"Auth/metrics/confusion_matrix.csv{modelname}", index=False)

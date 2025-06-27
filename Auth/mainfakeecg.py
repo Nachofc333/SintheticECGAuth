@@ -81,12 +81,12 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = CNNModel(seq_len=W_LEN, n_classes=N_CLASSES).to(device)
 
 # Cargar los pesos del modelo entrenado
-model.load_state_dict(torch.load(f"Pytorch/{modelname}.pth", map_location=device))
+model.load_state_dict(torch.load(f"Auth/{modelname}.pth", map_location=device))
 model.eval()
 
-X_test = torch.tensor(np.load(f"Pytorch/x_test{modelname}.npy"), dtype=torch.float32).to(device)
-y_test = np.load(f"Pytorch/y_test{modelname}.npy")  # No en tensor para manipular índices
-y_train = np.load("Pytorch/y_train.npy")  # No en tensor para manipular índices
+X_test = torch.tensor(np.load(f"Auth/x_test{modelname}.npy"), dtype=torch.float32).to(device)
+y_test = np.load(f"Auth/y_test{modelname}.npy")  # No en tensor para manipular índices
+y_train = np.load("Auth/y_train.npy")  # No en tensor para manipular índices
 
 # Cargar los datos (asumiendo que ya están preprocesados)
 # Carpeta base donde se encuentran los datos de ECG
@@ -155,7 +155,7 @@ plt.ylabel("Tasa de Verdaderos Positivos (TPR)")
 plt.title("Curva ROC Multiclase")
 plt.legend(loc="lower right")
 plt.grid()
-plt.savefig("Pytorch/img/test/ROCmain.png")
+plt.savefig("Auth/img/test/ROCmain.png")
 plt.show()
 
 if record_paths:
@@ -204,7 +204,7 @@ if record_paths:
     plt.grid()
 
     plt.tight_layout()
-    plt.savefig(f"Pytorch/img/test/comparacion_ecg{Persona}.png")
+    plt.savefig(f"Auth/img/test/comparacion_ecg{Persona}.png")
     plt.show()
 else:
     print(f"No se encontraron registros reales para la persona {predicted_class}.")
